@@ -1,6 +1,18 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, '') || '';
+
+export function getApiBaseUrl(): string {
+	if (!API_BASE_URL) {
+		throw new Error('NEXT_PUBLIC_API_BASE_URL is not configured. Set it in your environment for the current deployment.');
+	}
+	return API_BASE_URL;
+}
+
+export function buildApiUrl(path: string): string {
+	const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+	return `${getApiBaseUrl()}${normalizedPath}`;
+}
 
 export interface ExecuteProblemSnapshot {
 	title: string;
@@ -50,7 +62,7 @@ export interface PersistedSubmission {
 }
 
 const api = axios.create({
-	baseURL: API_BASE_URL,
+	baseURL: API_BASE_URL || undefined,
 	headers: {
 		'Content-Type': 'application/json',
 	},
@@ -153,6 +165,28 @@ export async function getMentorAnalysis(
 	payload: MentorAnalysisRequest,
 ): Promise<MentorAnalysisResponse> {
 	const response = await api.post<MentorAnalysisResponse>('/api/mentor-analysis', payload);
+	return response.data;
+}
+
+export interface AuthLoginPayload {
+	email: string;
+	password: string;
+}
+
+export interface AuthRegisterPayload {
+	username: string;
+	email: string;
+	password: string;
+	confirmPassword: string;
+}
+
+export async function loginUser(payload: AuthLoginPayload) {
+	const response = await api.post('/api/auth/login', payload);
+	return response.data;
+}
+
+export async function registerUser(payload: AuthRegisterPayload) {
+	const response = await api.post('/api/auth/register', payload);
 	return response.data;
 }
 

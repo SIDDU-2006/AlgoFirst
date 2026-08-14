@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Eye, EyeOff, Loader2, Copy, Check } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { loginUser } from '@/services/api';
 
 interface LoginFormData {
   email: string;
@@ -39,24 +40,16 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: data.email,
-          password: data.password,
-        }),
+      const result = await loginUser({
+        email: data.email,
+        password: data.password,
       });
 
-      const result = await response.json();
-
-      if (!response.ok) {
+      if (!result || !result.token || !result.user) {
         setError('root', {
-          message: result.message || 'Login failed. Please check your credentials.',
+          message: result?.message || 'Login failed. Please check your credentials.',
         });
-        toast.error(result.message || 'Login failed');
+        toast.error(result?.message || 'Login failed');
         return;
       }
 

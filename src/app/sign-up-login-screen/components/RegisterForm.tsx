@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Eye, EyeOff, Loader2, Check } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { registerUser } from '@/services/api';
 
 interface RegisterFormData {
   username: string;
@@ -55,23 +56,15 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
 
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: data.username,
-          email: data.email,
-          password: data.password,
-          confirmPassword: data.confirmPassword,
-        }),
+      const result = await registerUser({
+        username: data.username,
+        email: data.email,
+        password: data.password,
+        confirmPassword: data.confirmPassword,
       });
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        toast.error(result.message || 'Registration failed');
+      if (!result || !result.token || !result.user) {
+        toast.error(result?.message || 'Registration failed');
         return;
       }
 

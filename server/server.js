@@ -79,8 +79,8 @@ async function bootstrap() {
     await seedProblems();
     await seedDemoUser();
 
-    app.listen(PORT, () => {
-      console.log(`Backend listening on http://localhost:${PORT}`);
+     app.listen(PORT, '0.0.0.0', () => {
+      console.log(`Backend listening on port ${PORT}`);
     });
   } catch (error) {
     console.error('Failed to start backend:', error);
